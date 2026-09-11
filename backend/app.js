@@ -101,7 +101,15 @@ app.use('/api/auth',         authRoutes);
 
 // ─── Serve React App ──────────────────────────────────────────────────────────
 const path = require('path');
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
+app.use(express.static(path.join(__dirname, '../frontend/dist'), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('index.html')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+  }
+}));
 
 // Catch-all route to serve index.html for client-side routing
 app.use((req, res, next) => {
@@ -114,6 +122,7 @@ app.use((req, res, next) => {
   }
 
   // Safely send index.html using the root option to prevent Express 5 absolute path TypeErrors
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.sendFile('index.html', { root: path.join(__dirname, '../frontend/dist') }, (err) => {
     if (err) {
       console.error('[Fallback Route] Failed to send index.html:', err);
