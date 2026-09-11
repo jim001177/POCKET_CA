@@ -106,7 +106,20 @@ app.use(express.static(path.join(__dirname, '../frontend/dist')));
 // Catch-all route to serve index.html for client-side routing
 app.use((req, res, next) => {
   if (req.originalUrl.startsWith('/api/')) return next();
-  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+  
+  // If the browser is requesting a static asset (js/css/png/etc) that express.static missed,
+  // return 404 directly to prevent sending index.html which causes MIME type errors.
+  if (req.originalUrl.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|map)$/i)) {
+    return res.status(404).send('Static asset not found');
+  }
+
+  // Safely send index.html using the root option to prevent Express 5 absolute path TypeErrors
+  res.sendFile('index.html', { root: path.join(__dirname, '../frontend/dist') }, (err) => {
+    if (err) {
+      console.error('[Fallback Route] Failed to send index.html:', err);
+      next(err);
+    }
+  });
 });
 
 // ─── 404 Handler (must be after all routes) ───────────────────────────────────
