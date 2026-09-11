@@ -54,8 +54,8 @@ app.use(helmet({
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (mobile apps, curl, Postman)
-      if (!origin) return callback(null, true);
+      // Allow requests with no origin (mobile apps, curl) or from Render domains
+      if (!origin || origin.includes('onrender.com')) return callback(null, true);
 
       const allowedOrigins = [
         FRONTEND_URL,
@@ -66,7 +66,8 @@ app.use(
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error(`CORS policy: Origin ${origin} not allowed`));
+        // Return false to gracefully omit CORS headers instead of throwing a 500 error
+        callback(null, false);
       }
     },
     credentials: true,
