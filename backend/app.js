@@ -99,6 +99,15 @@ app.use('/api/goals',        goalsRoutes);
 app.use('/api/insights',     insightsRoutes);
 app.use('/api/auth',         authRoutes);
 
+// ─── Serve React App ──────────────────────────────────────────────────────────
+const path = require('path');
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+// Catch-all route to serve index.html for client-side routing
+app.use((req, res, next) => {
+  if (req.originalUrl.startsWith('/api/')) return next();
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+});
 
 // ─── 404 Handler (must be after all routes) ───────────────────────────────────
 app.use(notFound);

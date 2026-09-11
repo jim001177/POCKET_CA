@@ -8,7 +8,7 @@
 
 require('dotenv').config();
 
-const requiredVars = ['MONGODB_URI'];
+const requiredVars = ['GEMINI_API_KEY'];
 
 // Validate required environment variables
 const missingVars = requiredVars.filter((varName) => !process.env[varName]);
